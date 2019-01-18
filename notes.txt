@@ -1,0 +1,78 @@
+Live.Clip.Clip.loop_end Property
+
+	Get/Set the loop end pos of this Clip in beats/seconds (unit depends on warping).
+
+Live.Clip.Clip.loop_start Property
+
+	Get/Set the Clips loopstart pos in beats/seconds (unit depends on warping).
+
+Live.Clip.Clip.loopingProperty
+
+	Get/Set the Clips 'loop is enabled' flag.Only Warped Audio Clips or MIDI Clip can be looped.
+    
+Live.Clip.Clip.playing_position Property
+
+	Constant access to the current playing position of the clip.The returned value is the position in beats for midi and warped audio clips,or in seconds for unwarped audio clips. Stopped clips will return 0.
+    
+Live.Clip.Clip.positionProperty
+
+	Get/Set the loop position of this Clip in beats/seconds (unit depends on warping).
+    
+Live.Clip.Clip.signature_denominator Property
+
+	Get/Set access to the global signature denominator of the Clip.
+
+Live.Clip.Clip.signature_numeratorProperty
+
+	Get/Set access to the global signature numerator of the Clip.    
+    
+Live.Clip.Clip.quantize()Method
+
+	quantize( (Clip)arg1, (int)arg2, (float)arg3) -> None : Quantize all notes in a clip or align warp markers. C++ signature :  void quantize(TPyHandle<AClip>,int,float)
+    
+Live.Clip.Clip.scrub()Method
+
+	scrub( (Clip)self, (float)scrub_position) -> None : Scrubs inside a clip. scrub_position defines the position in beats that the scrub will start from. The scrub will continue until stop_scrub is called. Global quantization applies to the scrub's position and length. C++ signature :  void scrub(TPyHandle<AClip>,double)
+    
+Live.Clip.Clip.stop()Method
+
+	stop( (Clip)arg1) -> None : Stop playing this Clip. C++ signature :  void stop(TPyHandle<AClip>)
+
+Live.Clip.Clip.stop_scrub()Method
+
+	stop_scrub( (Clip)arg1) -> None : Stops the current scrub. C++ signature :  void stop_scrub(TPyHandle<AClip>)
+    
+Live.Clip.Clip.View.show_loop()Method
+
+	show_loop( (View)arg1) -> None : Show the entire loop in the detail view. C++ signature :  void show_loop(TPyViewData<AClip>)
+    
+Live.ClipSlot.ClipSlot.create_clip()Method
+
+	create_clip( (ClipSlot)arg1, (float)arg2) -> None : Creates an empty clip with the given length in the slot. Throws an error when called on non-empty slots or slots in non-MIDI tracks. C++ signature :  void create_clip(TPyHandle<AGroupAndClipSlotBase>,double)
+    
+Live.ClipSlot.ClipSlot.has_clipProperty
+
+	Returns true if this Clipslot owns a Clip.
+    
+Live.ClipSlot.ClipSlot.clipProperty
+
+	Returns the Clip which this clipslots currently owns. Might be None.
+    
+    
+Live.Song.Song.View.selected_track Property
+
+	Get/Set the current selected Track in Lives Session or Arrangerview.
+
+Live.Song.Song.session_record Property
+
+	Get/Set the session record state.    
+
+Live.Track.Track.arm Property
+
+	Arm the track for recording. Not available for Master- and Send Tracks.  
+
+Live.Song.Song.exclusive_armProperty
+
+	Get if Tracks should be armed exclusively by default.
+
+    
