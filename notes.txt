@@ -1,3 +1,14 @@
+TODO:
+1. Gere le cas ou on arrete le loop avant la fin de la premiere mesure/bar : loper entre 0 et le beat de quand on a appuyer stop
+2. quand on clique record, activer lenregistrement dans le premier clip dispo des tracks armees ( on peut commencer en supposant qu'on a une seule track armée )
+3. mapper des boutons pour bouger/allonger retrecir le loop :utiliser les 4 fleches au dessus des boutons  play/record.
+    déplacer par increment de taille de loop.
+    agrandir/réctrécir par incrament de beat
+4. Setter la duree du loop par defaut autrement que à une mesure : faire une mesure si la durée du loop du clip précédent n'est pas défini, sinon la durée du loop du clip précédent.
+5. gerer le cas d'une track audio
+6. Gerer le cas ou on appuie sur record alors que le clip existe déjà : pas de problème si 2. est fait
+7. assigner une fonction au job wheel : master volume?
+
 Live.Clip.Clip.loop_end Property
 
 	Get/Set the loop end pos of this Clip in beats/seconds (unit depends on warping).
@@ -75,4 +86,10 @@ Live.Song.Song.exclusive_armProperty
 
 	Get if Tracks should be armed exclusively by default.
 
+Live.Track.Track.clip_slotsProperty
+
+	const access to the list of clipslots (see class AClipSlot) for this track.The list will be empty for the master and sendtracks.    
     
+Live.Track.Track.fired_slot_indexProperty
+
+	const access to the index of the fired (and thus blinking) clipslot in this track.This index is -1 if no slot is fired and -2 if the track's stop button has been fired.

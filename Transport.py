@@ -382,6 +382,10 @@ class Transport(MackieControlComponent):
                     print('{} : GOT : track:\n{}'.format(datetime.datetime.now(),got_track), file=f)
                     print('{} : GOT : track.arm:\n{}'.format(datetime.datetime.now(),got_track.arm), file=f)
                     got_track.arm=True
+                    #unarm all other tracks
+                    for t in self.song().tracks:
+                        if t != got_track:
+                            t.arm = False
                     self.song().session_record = True
                     
                     if clip_slot and clip_slot.clip:
