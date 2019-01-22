@@ -8,6 +8,7 @@ TODO:
 5. gerer le cas d'une track audio
 6. Gerer le cas ou on appuie sur record alors que le clip existe déjà : pas de problème si 2. est fait
 7. assigner une fonction au job wheel : master volume?
+8. disable select quand on touch le volume ou autre d'une tracks
 
 Live.Clip.Clip.loop_end Property
 
