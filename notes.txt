@@ -94,3 +94,9 @@ Live.Track.Track.clip_slotsProperty
 Live.Track.Track.fired_slot_indexProperty
 
 	const access to the index of the fired (and thus blinking) clipslot in this track.This index is -1 if no slot is fired and -2 if the track's stop button has been fired.
+    
+Live.Song.Song.tracks Property
+
+	Const access to a list of all Player Tracks in the Live Song, exludingthe return and Master Track (see also Song.send_tracks and Song.master_track).At least one MIDI or Audio Track is always available.
+    
+    

@@ -7,8 +7,11 @@ from __future__ import absolute_import, print_function, unicode_literals
 from .MackieControlComponent import *
 import datetime
 got_log='c:/temp/ableton_mackie.log'
-import pprint
-
+#import pprint
+#import inspect
+#import sys
+#import json
+import time
     
 
 class Transport(MackieControlComponent):
@@ -346,6 +349,9 @@ class Transport(MackieControlComponent):
             #Live.Song.Song.record_mode
             #self.song().record_mode = not self.song().record_mode
             #Live.Song.Song.session_record
+            
+            # Session recording is already in progress
+            # Managing how to start the loops after recording is stopped
             if ( self.song().session_record ):
                 #Live.Clip.Clip.positionProperty
                 if self.session_is_visible():
@@ -370,26 +376,37 @@ class Transport(MackieControlComponent):
                         print('{} : GOT : clip_slot and clip_slot.clip is false'.format(datetime.datetime.now()), file=f)
                 else:
                     print('{} : GOT : self.session_is_visible is not visible'.format(datetime.datetime.now()), file=f)
-            else:
-                clip_slot = self.selected_clip_slot()
-                if clip_slot:                 
-                    got_track=self.song().view.selected_track
-                    #got_view_str=self.song().View
-                    pp = pprint.PrettyPrinter(indent=4)
-                    got_track_str=pp.pprint(got_track)
-                    #print('{} : GOT : view:\n{}'.format(datetime.datetime.now(),got_view_str), file=f)
-                    print('{} : GOT : track pprint:\n{}'.format(datetime.datetime.now(),got_track_str), file=f)
-                    print('{} : GOT : track:\n{}'.format(datetime.datetime.now(),got_track), file=f)
-                    print('{} : GOT : track.arm:\n{}'.format(datetime.datetime.now(),got_track.arm), file=f)
-                    got_track.arm=True
-                    #unarm all other tracks
-                    for t in self.song().tracks:
-                        if t != got_track:
-                            t.arm = False
-                    self.song().session_record = True
-                    
-                    if clip_slot and clip_slot.clip:
-                        self.selected_clip_slot().clip.looping=False
+            
+            # Session record is not activated yet
+            # Preparing to record in session mode
+            got_clip_slot_to_show=None
+            if ( not self.song().session_record ):
+                for got_track in self.song().tracks:
+                    if got_track.arm==True:
+                        got_last_clip_stop_with_clip_id=None
+                        got_last_clip_slot_id=None
+                        for i,got_clip_slot in enumerate(got_track.clip_slots):
+                            got_last_clip_slot_id=i
+                            if got_clip_slot.has_clip:
+                                got_last_clip_stop_with_clip_id=i
+                        if ( got_last_clip_stop_with_clip_id==None):
+                            got_last_clip_stop_with_clip_id=-1
+                        got_track.clip_slots[got_last_clip_stop_with_clip_id+1].set_fire_button_state(True)
+                        if got_clip_slot_to_show==None:
+                            got_clip_slot_to_show=got_track.clip_slots[got_last_clip_stop_with_clip_id+1]
+                if got_clip_slot_to_show.clip!=None:
+                    got_clip_slot_to_show.clip.view.show_loop()
+                else:
+                    while(got_clip_slot_to_show.clip==None):
+                        time.sleep(0.1)
+                    got_clip_slot_to_show.clip.view.show_loop()    
+                
+                
+                
+                
+                
+                
+
 
                 
         
