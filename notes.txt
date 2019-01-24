@@ -1,6 +1,6 @@
 TODO:
 1. Gere le cas ou on arrete le loop avant la fin de la premiere mesure/bar : loper entre 0 et le beat de quand on a appuyer stop
-2. quand on clique record, activer lenregistrement dans le premier clip dispo des tracks armees ( on peut commencer en supposant qu'on a une seule track armée )
+2. quand on clique record, activer lenregistrement dans le premier clip dispo des tracks armees ( on peut commencer en supposant qu'on a une seule track armée ) et affiche le clip en cours d'enregistrement
 3. mapper des boutons pour bouger/allonger retrecir le loop :utiliser les 4 fleches au dessus des boutons  play/record.
     déplacer par increment de taille de loop.
     agrandir/réctrécir par incrament de beat
@@ -99,4 +99,10 @@ Live.Song.Song.tracks Property
 
 	Const access to a list of all Player Tracks in the Live Song, exludingthe return and Master Track (see also Song.send_tracks and Song.master_track).At least one MIDI or Audio Track is always available.
     
+Live.Song.Song.View.detail_clipProperty
+
+	Get/Set the Clip that is currently visible in Lives Detailview.
     
+Live.Song.Song.View.highlighted_clip_slot Property
+
+	Get/Set the clip slot, defined via the highlighted track and scene in the Session.Will be None for Master- and Sendtracks.

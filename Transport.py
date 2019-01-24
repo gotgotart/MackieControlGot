@@ -392,14 +392,15 @@ class Transport(MackieControlComponent):
                         if ( got_last_clip_stop_with_clip_id==None):
                             got_last_clip_stop_with_clip_id=-1
                         got_track.clip_slots[got_last_clip_stop_with_clip_id+1].set_fire_button_state(True)
-                        if got_clip_slot_to_show==None:
-                            got_clip_slot_to_show=got_track.clip_slots[got_last_clip_stop_with_clip_id+1]
-                if got_clip_slot_to_show.clip!=None:
-                    got_clip_slot_to_show.clip.view.show_loop()
-                else:
-                    while(got_clip_slot_to_show.clip==None):
-                        time.sleep(0.1)
-                    got_clip_slot_to_show.clip.view.show_loop()    
+                        self.song().view.highlighted_clip_slot=got_track.clip_slots[got_last_clip_stop_with_clip_id+1]
+                        #if got_clip_slot_to_show==None:
+                        #    got_clip_slot_to_show=got_track.clip_slots[got_last_clip_stop_with_clip_id+1]
+                #if got_clip_slot_to_show.clip!=None:
+                #    got_clip_slot_to_show.clip.view.show_loop()
+                #else:
+                #    while(got_clip_slot_to_show.clip==None):
+                #        time.sleep(0.1)
+                #    got_clip_slot_to_show.clip.view.show_loop()    
                 
                 
                 
