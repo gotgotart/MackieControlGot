@@ -363,6 +363,12 @@ class Transport(MackieControlComponent):
                                 got_position=got_clip.playing_position
                                 got_clip.looping=True
                                 got_loop_length=got_clip.signature_numerator
+                                
+                                # set the loop length to the previous clip loop length if available
+                                if got_track.clip_slots[got_clip_slot_id-1]:
+                                    if got_track.clip_slots[got_clip_slot_id-1].clip:
+                                        got_loop_length=got_track.clip_slots[got_clip_slot_id-1].clip.loop_end-got_track.clip_slots[got_clip_slot_id-1].clip.loop_start
+                                
                                 got_clip_new_loop_start=(got_position//got_loop_length-1)*got_loop_length
                                 got_clip_new_loop_end=(got_position//got_loop_length)*got_loop_length
                                 if got_clip_new_loop_start<0:

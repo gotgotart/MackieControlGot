@@ -4,9 +4,9 @@ v 2. quand on clique record, activer lenregistrement dans le premier clip dispo 
 3. mapper des boutons pour bouger/allonger retrecir le loop :utiliser les 4 fleches au dessus des boutons  play/record.
     déplacer par increment de taille de loop.
     agrandir/réctrécir par incrament de beat
-4. Setter la duree du loop par defaut autrement que à une mesure : faire une mesure si la durée du loop du clip précédent n'est pas défini, sinon la durée du loop du clip précédent.
+v 4. Setter la duree du loop par defaut autrement que à une mesure : faire une mesure si la durée du loop du clip précédent n'est pas défini, sinon la durée du loop du clip précédent.
 5. gerer le cas d'une track audio
-6. Gerer le cas ou on appuie sur record alors que le clip existe déjà : pas de problème si 2. est fait
+v 6. Gerer le cas ou on appuie sur record alors que le clip existe déjà : pas de problème si 2. est fait
 7. assigner une fonction au job wheel : master volume?
 low priority/pas indispensable 8. disable select quand on touch le volume ou autre d'une tracks
 
