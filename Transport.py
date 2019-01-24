@@ -353,29 +353,50 @@ class Transport(MackieControlComponent):
             # Session recording is already in progress
             # Managing how to start the loops after recording is stopped
             if ( self.song().session_record ):
+                for got_track in self.song().tracks:
+                    if got_track.arm==True:
+                        got_clip_slot_id=got_track.fired_slot_index
+                        if got_clip_slot_id!=-1:
+                            got_clip_slot=got_track.clip_slots[got_clip_slot_id]
+                            if got_clip_slot.clip:
+                                got_clip=clip_slot.clip
+                                got_position=got_clip.playing_position
+                                got_clip.looping=True
+                                got_loop_length=got_clip.signature_numerator
+                                got_clip_new_loop_start=(got_position//got_loop_length-1)*got_loop_length
+                                got_clip_new_loop_end=(got_position//got_loop_length)*got_loop_length
+                                if got_clip_new_loop_start<0:
+                                    got_clip_new_loop_start=0
+                                    got_clip_new_loop_end=got_loop_length
+                                got_clip.position=got_clip_new_loop_start
+                                got_clip.loop_end=got_clip_new_loop_end
+                self.song().session_record = not self.song().session_record
                 #Live.Clip.Clip.positionProperty
-                if self.session_is_visible():
-                    clip_slot = self.selected_clip_slot()
-                    if clip_slot and clip_slot.clip:
-                        got_clip=clip_slot.clip
-                        got_position=got_clip.playing_position
-                        got_clip.looping=True
-                        
-                        got_loop_length=got_clip.signature_numerator
-                        print('{} : GOT : loop length : {} done'.format(datetime.datetime.now(),got_loop_length), file=f)
-                        
-                        got_clip_new_loop_start=(got_position//got_loop_length-1)*got_loop_length
-                        got_clip_new_loop_end=(got_position//got_loop_length)*got_loop_length
-                        got_clip.position=got_clip_new_loop_start
-                        got_clip.loop_end=got_clip_new_loop_end
-                        
-                        print('{} : GOT : playing_position position : {} done'.format(datetime.datetime.now(),got_position), file=f)
-                        
-                        self.song().session_record = not self.song().session_record                        
-                    else:
-                        print('{} : GOT : clip_slot and clip_slot.clip is false'.format(datetime.datetime.now()), file=f)
-                else:
-                    print('{} : GOT : self.session_is_visible is not visible'.format(datetime.datetime.now()), file=f)
+                #if self.session_is_visible():
+                #    clip_slot = self.selected_clip_slot()
+                #    if clip_slot and clip_slot.clip:
+                #        got_clip=clip_slot.clip
+                #        got_position=got_clip.playing_position
+                #        got_clip.looping=True
+                #        
+                #        got_loop_length=got_clip.signature_numerator
+                #        print('{} : GOT : loop length : {} done'.format(datetime.datetime.now(),got_loop_length), file=f)
+                #        
+                #        got_clip_new_loop_start=(got_position//got_loop_length-1)*got_loop_length
+                #        got_clip_new_loop_end=(got_position//got_loop_length)*got_loop_length
+                #        if got_clip_new_loop_start<0:
+                #            got_clip_new_loop_start=0
+                #            got_clip_new_loop_end=got_loop_length
+                #        got_clip.position=got_clip_new_loop_start
+                #        got_clip.loop_end=got_clip_new_loop_end
+                #        
+                #        print('{} : GOT : playing_position position : {} done'.format(datetime.datetime.now(),got_position), file=f)
+                #        
+                #        self.song().session_record = not self.song().session_record                        
+                #    else:
+                #        print('{} : GOT : clip_slot and clip_slot.clip is false'.format(datetime.datetime.now()), file=f)
+                #else:
+                #    print('{} : GOT : self.session_is_visible is not visible'.format(datetime.datetime.now()), file=f)
             
             # Session record is not activated yet
             # Preparing to record in session mode
