@@ -350,32 +350,46 @@ class Transport(MackieControlComponent):
             #self.song().record_mode = not self.song().record_mode
             #Live.Song.Song.session_record
             
-            # Session recording is already in progress
-            # Managing how to start the loops after recording is stopped
+            # if session is recording, set and activate loop, and stop recording
             if ( self.song().session_record ):
                 for got_track in self.song().tracks:
                     if got_track.arm==True:
-                        got_clip_slot_id=got_track.fired_slot_index
+                        got_clip_slot_id=got_track.playing_slot_index
+                        print('{} : GOT : ZOBI1 : {} done'.format(datetime.datetime.now(),got_clip_slot_id), file=f)
                         if got_clip_slot_id!=-1:
                             got_clip_slot=got_track.clip_slots[got_clip_slot_id]
                             if got_clip_slot.clip:
-                                got_clip=clip_slot.clip
-                                got_position=got_clip.playing_position
-                                got_clip.looping=True
-                                got_loop_length=got_clip.signature_numerator
-                                
+                                got_clip=got_clip_slot.clip
+                                print('{} : GOT : ZOBI : {} done'.format(datetime.datetime.now(),got_clip), file=f)
+                                got_loop_length=got_clip.signature_numerator                                
                                 # set the loop length to the previous clip loop length if available
+                                # else it will be the signature numerator ( see previous statement )
                                 if got_track.clip_slots[got_clip_slot_id-1]:
                                     if got_track.clip_slots[got_clip_slot_id-1].clip:
                                         got_loop_length=got_track.clip_slots[got_clip_slot_id-1].clip.loop_end-got_track.clip_slots[got_clip_slot_id-1].clip.loop_start
-                                
+                                        print('{} : GOT : previous clip start,stop are : {},{} done'.format(datetime.datetime.now(),got_track.clip_slots[got_clip_slot_id-1].clip.loop_start,got_track.clip_slots[got_clip_slot_id-1].clip.loop_end), file=f)
+                                    else:
+                                        print('{} : GOT : previous clip slot has no clip: {} done'.format(datetime.datetime.now(),"ZOBI"), file=f)
+                                else:
+                                    print('{} : GOT : there is no previous clip slot : {} done'.format(datetime.datetime.now(),"ZOBI"), file=f)
+                                # the new loop start/end will be the previous loop that have been recorded
+                                got_position=got_clip.playing_position
+                                print('{} : GOT : got_position : {} done'.format(datetime.datetime.now(),got_position), file=f)
                                 got_clip_new_loop_start=(got_position//got_loop_length-1)*got_loop_length
                                 got_clip_new_loop_end=(got_position//got_loop_length)*got_loop_length
+                                
+                                # in case there was no previous loop ( stop record pressed before the loop length )
                                 if got_clip_new_loop_start<0:
                                     got_clip_new_loop_start=0
                                     got_clip_new_loop_end=got_loop_length
+                                
+                                print('{} : GOT : clip start,stop will be : {},{} done'.format(datetime.datetime.now(),got_clip_new_loop_start,got_clip_new_loop_end), file=f)
+                                
+                                got_clip.looping=True    
                                 got_clip.position=got_clip_new_loop_start
                                 got_clip.loop_end=got_clip_new_loop_end
+                                
+                # stop recording session                
                 self.song().session_record = not self.song().session_record
                 #Live.Clip.Clip.positionProperty
                 #if self.session_is_visible():
@@ -410,15 +424,16 @@ class Transport(MackieControlComponent):
             if ( not self.song().session_record ):
                 for got_track in self.song().tracks:
                     if got_track.arm==True:
-                        got_last_clip_stop_with_clip_id=None
-                        got_last_clip_slot_id=None
+                        # find the last clip slot of the track that already has a clip
+                        got_last_clip_stop_with_clip_id=-1
                         for i,got_clip_slot in enumerate(got_track.clip_slots):
                             got_last_clip_slot_id=i
                             if got_clip_slot.has_clip:
                                 got_last_clip_stop_with_clip_id=i
-                        if ( got_last_clip_stop_with_clip_id==None):
-                            got_last_clip_stop_with_clip_id=-1
+
+                        # start recording the next clip slot
                         got_track.clip_slots[got_last_clip_stop_with_clip_id+1].set_fire_button_state(True)
+                        # show this clip
                         self.song().view.highlighted_clip_slot=got_track.clip_slots[got_last_clip_stop_with_clip_id+1]
                         #if got_clip_slot_to_show==None:
                         #    got_clip_slot_to_show=got_track.clip_slots[got_last_clip_stop_with_clip_id+1]
@@ -428,16 +443,6 @@ class Transport(MackieControlComponent):
                 #    while(got_clip_slot_to_show.clip==None):
                 #        time.sleep(0.1)
                 #    got_clip_slot_to_show.clip.view.show_loop()    
-                
-                
-                
-                
-                
-                
-
-
-                
-        
 
     def __rewind(self, acceleration=1):
         beats = acceleration
