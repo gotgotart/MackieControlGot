@@ -12,7 +12,12 @@ got_log='c:/temp/ableton_mackie.log'
 #import sys
 #import json
 import time
-    
+
+import inspect
+ 
+def line_numb():
+    '''Returns the current line number in our program'''
+    return inspect.currentframe().f_back.f_lineno
 
 class Transport(MackieControlComponent):
     """Representing the transport section of the Mackie Control: """
@@ -355,13 +360,14 @@ class Transport(MackieControlComponent):
                 for got_track in self.song().tracks:
                     if got_track.arm==True:
                         got_clip_slot_id=got_track.playing_slot_index
-                        print('{} : GOT : ZOBI1 : {} done'.format(datetime.datetime.now(),got_clip_slot_id), file=f)
+                        print('{},line {},got_clip_slot_id : {}'.format(datetime.datetime.now(),line_numb(),got_clip_slot_id), file=f)
                         if got_clip_slot_id!=-1:
                             got_clip_slot=got_track.clip_slots[got_clip_slot_id]
                             if got_clip_slot.clip:
                                 got_clip=got_clip_slot.clip
-                                print('{} : GOT : ZOBI : {} done'.format(datetime.datetime.now(),got_clip), file=f)
-                                got_loop_length=got_clip.signature_numerator                                
+                                
+                                got_loop_length=got_clip.signature_numerator*got_clip.signature_denominator
+                                print('{},line {},got_clip.signature_numerator*got_clip.signature_denominator : {}'.format(datetime.datetime.now(),line_numb(),got_loop_length), file=f)                                
                                 # set the loop length to the previous clip loop length if available
                                 # else it will be the signature numerator ( see previous statement )
                                 if got_track.clip_slots[got_clip_slot_id-1]:
@@ -387,7 +393,9 @@ class Transport(MackieControlComponent):
                                 
                                 got_clip.looping=True    
                                 got_clip.position=got_clip_new_loop_start
+                                got_clip.start_marker=got_clip_new_loop_start
                                 got_clip.loop_end=got_clip_new_loop_end
+                                
                                 
                 # stop recording session                
                 self.song().session_record = not self.song().session_record
