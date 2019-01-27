@@ -7,8 +7,13 @@ v 2. quand on clique record, activer lenregistrement dans le premier clip dispo 
 v 4. Setter la duree du loop par defaut autrement que à une mesure : faire une mesure si la durée du loop du clip précédent n'est pas défini, sinon la durée du loop du clip précédent.
 5. gerer le cas d'une track audio
 v 6. Gerer le cas ou on appuie sur record alors que le clip existe déjà : pas de problème si 2. est fait
-7. assigner une fonction au job wheel : master volume?
+7. assigner une fonction au job wheel : master volume? ou plutot move loop by loop length
 low priority/pas indispensable 8. disable select quand on touch le volume ou autre d'une tracks
+8. handle multiple modes
+    our session looping mode
+    one clip playing mode with the rec/mure/select track buttons
+    instrument/effect mode
+9. have the lide slider column manages the master tack volume...
 
 Live.Clip.Clip.loop_end Property
 

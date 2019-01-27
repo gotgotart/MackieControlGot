@@ -224,25 +224,40 @@ class Transport(MackieControlComponent):
             self.song().tempo = tempo
         else:
             if self.session_is_visible():
-                num_steps_per_session_scroll = 4
                 if backwards:
-                    self.__jog_step_count_backwards += 1
-                    if self.__jog_step_count_backwards >= num_steps_per_session_scroll:
-                        self.__jog_step_count_backwards = 0
-                        step = -1
-                    else:
-                        step = 0
+                    amount = -(value - 64)
                 else:
-                    self.__jog_step_count_forward += 1
-                    if self.__jog_step_count_forward >= num_steps_per_session_scroll:
-                        self.__jog_step_count_forward = 0
-                        step = 1
-                    else:
-                        step = 0
-                if step:
-                    new_index = list(self.song().scenes).index(self.song().view.selected_scene) + step
-                    new_index = min(len(self.song().scenes) - 1, max(0, new_index))
-                    self.song().view.selected_scene = self.song().scenes[new_index]
+                    amount = value
+                clip_slot = self.selected_clip_slot()
+                    if clip_slot and clip_slot.clip:
+                        got_clip=clip_slot.clip
+                        if got_clip.looping
+                            got_increment=got_clip.loop_end-got_clip.loop_start
+                            got_clip.position=got_clip.position+got_increment*amount
+                            got_clip.start_marker=got_clip.position+got_increment*amount
+                            
+                        else:
+                            got_increment=got_clip.signature_numerator*got_clip.signature_denominator
+                            got_clip.playing_position=got_clip.playing_position+got_increment*amount
+                #num_steps_per_session_scroll = 4
+                # if backwards:
+                    # self.__jog_step_count_backwards += 1
+                    # if self.__jog_step_count_backwards >= num_steps_per_session_scroll:
+                        # self.__jog_step_count_backwards = 0
+                        # step = -1
+                    # else:
+                        # step = 0
+                # else:
+                    # self.__jog_step_count_forward += 1
+                    # if self.__jog_step_count_forward >= num_steps_per_session_scroll:
+                        # self.__jog_step_count_forward = 0
+                        # step = 1
+                    # else:
+                        # step = 0
+                # if step:
+                    # new_index = list(self.song().scenes).index(self.song().view.selected_scene) + step
+                    # new_index = min(len(self.song().scenes) - 1, max(0, new_index))
+                    # self.song().view.selected_scene = self.song().scenes[new_index]
             else:
                 if backwards:
                     step = max(1.0, (value - 64) / 2.0)
