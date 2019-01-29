@@ -15,6 +15,12 @@ low priority/pas indispensable 8. disable select quand on touch le volume ou aut
     instrument/effect mode
 9. have the lide slider column manages the master tack volume...
 
+10. override preivous conflicting notes:
+    jog wheel is tempo
+    fast forward/backward is move loop by loop length if loop or move clip by bar
+    'track' forward/backward is  move loop by beat if loop or move clip by beat
+    marker forward/backward is increase loop length by loop length ? or bar?
+
 Live.Clip.Clip.loop_end Property
 
 	Get/Set the loop end pos of this Clip in beats/seconds (unit depends on warping).

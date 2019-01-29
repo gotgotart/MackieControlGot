@@ -148,6 +148,7 @@ class Transport(MackieControlComponent):
             self.__update_zoom_led_in_session()
 
     def handle_marker_switch_ids(self, switch_id, value):
+        got_log(line_numb(),'switch_id : {}'.format(switch_id))
         if switch_id == SID_MARKER_FROM_PREV:
             if value == BUTTON_PRESSED:
                 self.__jump_to_prev_cue()
@@ -235,36 +236,9 @@ class Transport(MackieControlComponent):
                     amount = -(value - 64)
                 else:
                     amount = value
-                clip_slot = self.selected_clip_slot()
-                if clip_slot and clip_slot.clip:
-                    got_clip=clip_slot.clip
-                    if got_clip.looping:
-                        got_increment=got_clip.loop_end-got_clip.loop_start
-                        got_clip.position=got_clip.position+got_increment*amount
-                        got_clip.start_marker=0
-                        
-                    else:
-                        got_increment=got_clip.signature_numerator*got_clip.signature_denominator
-                        got_clip.playing_position=got_clip.playing_position+got_increment*amount
-                #num_steps_per_session_scroll = 4
-                # if backwards:
-                    # self.__jog_step_count_backwards += 1
-                    # if self.__jog_step_count_backwards >= num_steps_per_session_scroll:
-                        # self.__jog_step_count_backwards = 0
-                        # step = -1
-                    # else:
-                        # step = 0
-                # else:
-                    # self.__jog_step_count_forward += 1
-                    # if self.__jog_step_count_forward >= num_steps_per_session_scroll:
-                        # self.__jog_step_count_forward = 0
-                        # step = 1
-                    # else:
-                        # step = 0
-                # if step:
-                    # new_index = list(self.song().scenes).index(self.song().view.selected_scene) + step
-                    # new_index = min(len(self.song().scenes) - 1, max(0, new_index))
-                    # self.song().view.selected_scene = self.song().scenes[new_index]
+            
+
+                self.__got_move_loop(amount,"beat")
             else:
                 if backwards:
                     step = max(1.0, (value - 64) / 2.0)
@@ -371,12 +345,7 @@ class Transport(MackieControlComponent):
         else:
             self.application().view.scroll_view(nav.right, b'', self.alt_is_pressed())
 
-    def __toggle_record(self):
-        #with open(got_log, 'a+') as f:
-        #Live.Song.Song.record_mode
-        #self.song().record_mode = not self.song().record_mode
-        #Live.Song.Song.session_record
-        
+    def __toggle_record(self):        
         # if session is recording, set and activate loop, and stop recording
         if ( self.song().session_record ):
             for got_track in self.song().tracks:
@@ -424,35 +393,7 @@ class Transport(MackieControlComponent):
                             
             # stop recording session                
             self.song().session_record = not self.song().session_record
-            #Live.Clip.Clip.positionProperty
-            #if self.session_is_visible():
-            #    clip_slot = self.selected_clip_slot()
-            #    if clip_slot and clip_slot.clip:
-            #        got_clip=clip_slot.clip
-            #        got_position=got_clip.playing_position
-            #        got_clip.looping=True
-            #        
-            #        got_loop_length=got_clip.signature_numerator
-            #        print('{} : GOT : loop length : {} done'.format(datetime.datetime.now(),got_loop_length), file=f)
-            #        
-            #        got_clip_new_loop_start=(got_position//got_loop_length-1)*got_loop_length
-            #        got_clip_new_loop_end=(got_position//got_loop_length)*got_loop_length
-            #        if got_clip_new_loop_start<0:
-            #            got_clip_new_loop_start=0
-            #            got_clip_new_loop_end=got_loop_length
-            #        got_clip.position=got_clip_new_loop_start
-            #        got_clip.loop_end=got_clip_new_loop_end
-            #        
-            #        print('{} : GOT : playing_position position : {} done'.format(datetime.datetime.now(),got_position), file=f)
-            #        
-            #        self.song().session_record = not self.song().session_record                        
-            #    else:
-            #        print('{} : GOT : clip_slot and clip_slot.clip is false'.format(datetime.datetime.now()), file=f)
-            #else:
-            #    print('{} : GOT : self.session_is_visible is not visible'.format(datetime.datetime.now()), file=f)
-        
-        # Session record is not activated yet
-        # Preparing to record in session mode
+
         got_clip_slot_to_show=None
         if ( not self.song().session_record ):
             for got_track in self.song().tracks:
@@ -468,15 +409,35 @@ class Transport(MackieControlComponent):
                     got_track.clip_slots[got_last_clip_stop_with_clip_id+1].set_fire_button_state(True)
                     # show this clip
                     self.song().view.highlighted_clip_slot=got_track.clip_slots[got_last_clip_stop_with_clip_id+1]
-                    #if got_clip_slot_to_show==None:
-                    #    got_clip_slot_to_show=got_track.clip_slots[got_last_clip_stop_with_clip_id+1]
-            #if got_clip_slot_to_show.clip!=None:
-            #    got_clip_slot_to_show.clip.view.show_loop()
-            #else:
-            #    while(got_clip_slot_to_show.clip==None):
-            #        time.sleep(0.1)
-            #    got_clip_slot_to_show.clip.view.show_loop()    
 
+
+    def __got_move_loop(self,got_amount,got_unit):
+
+        if self.session_is_visible():
+
+        
+
+            clip_slot = self.selected_clip_slot()
+            if clip_slot and clip_slot.clip:
+                got_clip=clip_slot.clip
+                got_increment=0
+                if ( got_unit == "beat" ):
+                    got_increment=got_clip.signature_denominator
+                if ( got_unit == "loop" ):
+                    if got_clip.looping:
+                        got_increment=got_clip.loop_end-got_clip.loop_start
+                    else:
+                        got_increment=got_clip.signature_denominator*got_clip.signature_numerator
+                if ( got_unit == "bar" ):
+                    got_increment=got_clip.signature_denominator*got_clip.signature_numerator
+                if got_clip.looping:
+                    got_clip.position=got_clip.position+got_increment*got_amount
+                    got_clip.start_marker=0
+                    
+                else:
+                    got_clip.playing_position=got_clip.playing_position++got_increment*got_amount
+    
+    
     def __rewind(self, acceleration=1):
         beats = acceleration
         self.song().jump_by(-beats)
