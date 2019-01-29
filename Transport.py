@@ -6,7 +6,8 @@
 from __future__ import absolute_import, print_function, unicode_literals
 from .MackieControlComponent import *
 import datetime
-got_log='c:/temp/ableton_mackie.log'
+got_log_file='c:/temp/ableton_mackie.log'
+got_debug=True
 #import pprint
 #import inspect
 #import sys
@@ -18,6 +19,11 @@ import inspect
 def line_numb():
     '''Returns the current line number in our program'''
     return inspect.currentframe().f_back.f_lineno
+
+def got_log(got_line_numb,got_log_str):
+    if got_debug:
+        with open(got_log_file, 'a+') as f:
+            print('{} | line {} | {}'.format(datetime.datetime.now(),got_line_numb,got_log_str), file=f)
 
 class Transport(MackieControlComponent):
     """Representing the transport section of the Mackie Control: """
@@ -210,6 +216,7 @@ class Transport(MackieControlComponent):
                                 self.__toggle_record()
 
     def handle_jog_wheel_rotation(self, value):
+        got_log(line_numb(),'jog wheel rotation value : {}'.format(value))
         backwards = value >= 64
         if self.control_is_pressed():
             if self.alt_is_pressed():
@@ -229,16 +236,16 @@ class Transport(MackieControlComponent):
                 else:
                     amount = value
                 clip_slot = self.selected_clip_slot()
-                    if clip_slot and clip_slot.clip:
-                        got_clip=clip_slot.clip
-                        if got_clip.looping
-                            got_increment=got_clip.loop_end-got_clip.loop_start
-                            got_clip.position=got_clip.position+got_increment*amount
-                            got_clip.start_marker=got_clip.position+got_increment*amount
-                            
-                        else:
-                            got_increment=got_clip.signature_numerator*got_clip.signature_denominator
-                            got_clip.playing_position=got_clip.playing_position+got_increment*amount
+                if clip_slot and clip_slot.clip:
+                    got_clip=clip_slot.clip
+                    if got_clip.looping:
+                        got_increment=got_clip.loop_end-got_clip.loop_start
+                        got_clip.position=got_clip.position+got_increment*amount
+                        got_clip.start_marker=0
+                        
+                    else:
+                        got_increment=got_clip.signature_numerator*got_clip.signature_denominator
+                        got_clip.playing_position=got_clip.playing_position+got_increment*amount
                 #num_steps_per_session_scroll = 4
                 # if backwards:
                     # self.__jog_step_count_backwards += 1
@@ -365,107 +372,110 @@ class Transport(MackieControlComponent):
             self.application().view.scroll_view(nav.right, b'', self.alt_is_pressed())
 
     def __toggle_record(self):
-        with open(got_log, 'a+') as f:
-            #Live.Song.Song.record_mode
-            #self.song().record_mode = not self.song().record_mode
-            #Live.Song.Song.session_record
-            
-            # if session is recording, set and activate loop, and stop recording
-            if ( self.song().session_record ):
-                for got_track in self.song().tracks:
-                    if got_track.arm==True:
-                        got_clip_slot_id=got_track.playing_slot_index
-                        print('{},line {},got_clip_slot_id : {}'.format(datetime.datetime.now(),line_numb(),got_clip_slot_id), file=f)
-                        if got_clip_slot_id!=-1:
-                            got_clip_slot=got_track.clip_slots[got_clip_slot_id]
-                            if got_clip_slot.clip:
-                                got_clip=got_clip_slot.clip
-                                
-                                got_loop_length=got_clip.signature_numerator*got_clip.signature_denominator
-                                print('{},line {},got_clip.signature_numerator*got_clip.signature_denominator : {}'.format(datetime.datetime.now(),line_numb(),got_loop_length), file=f)                                
-                                # set the loop length to the previous clip loop length if available
-                                # else it will be the signature numerator ( see previous statement )
-                                if got_track.clip_slots[got_clip_slot_id-1]:
-                                    if got_track.clip_slots[got_clip_slot_id-1].clip:
+        #with open(got_log, 'a+') as f:
+        #Live.Song.Song.record_mode
+        #self.song().record_mode = not self.song().record_mode
+        #Live.Song.Song.session_record
+        
+        # if session is recording, set and activate loop, and stop recording
+        if ( self.song().session_record ):
+            for got_track in self.song().tracks:
+                if got_track.arm==True:
+                    got_clip_slot_id=got_track.playing_slot_index
+                    got_log(line_numb(),'got_clip_slot_id : {}'.format(got_clip_slot_id))
+                    if got_clip_slot_id!=-1:
+                        got_clip_slot=got_track.clip_slots[got_clip_slot_id]
+                        if got_clip_slot.clip:
+                            got_clip=got_clip_slot.clip
+                            
+                            got_loop_length=got_clip.signature_numerator*got_clip.signature_denominator
+                            got_log(line_numb(),'got_clip.signature_numerator*got_clip.signature_denominator : {}'.format(got_loop_length))                                
+                            # set the loop length to the previous clip loop length if available
+                            # else it will be the signature numerator ( see previous statement )
+                            if got_track.clip_slots[got_clip_slot_id-1]:
+                                if got_track.clip_slots[got_clip_slot_id-1].clip:
+                                    if got_track.clip_slots[got_clip_slot_id-1].clip.looping:
                                         got_loop_length=got_track.clip_slots[got_clip_slot_id-1].clip.loop_end-got_track.clip_slots[got_clip_slot_id-1].clip.loop_start
-                                        print('{} : GOT : previous clip start,stop are : {},{} done'.format(datetime.datetime.now(),got_track.clip_slots[got_clip_slot_id-1].clip.loop_start,got_track.clip_slots[got_clip_slot_id-1].clip.loop_end), file=f)
+                                        got_log(line_numb(),'previous clip start,stop are : {},{} done'.format(got_track.clip_slots[got_clip_slot_id-1].clip.loop_start,got_track.clip_slots[got_clip_slot_id-1].clip.loop_end))
                                     else:
-                                        print('{} : GOT : previous clip slot has no clip: {} done'.format(datetime.datetime.now(),"ZOBI"), file=f)
+                                        got_log(line_numb(),'previous clip is not looping')
                                 else:
-                                    print('{} : GOT : there is no previous clip slot : {} done'.format(datetime.datetime.now(),"ZOBI"), file=f)
-                                # the new loop start/end will be the previous loop that have been recorded
-                                got_position=got_clip.playing_position
-                                print('{} : GOT : got_position : {} done'.format(datetime.datetime.now(),got_position), file=f)
-                                got_clip_new_loop_start=(got_position//got_loop_length-1)*got_loop_length
-                                got_clip_new_loop_end=(got_position//got_loop_length)*got_loop_length
-                                
-                                # in case there was no previous loop ( stop record pressed before the loop length )
-                                if got_clip_new_loop_start<0:
-                                    got_clip_new_loop_start=0
-                                    got_clip_new_loop_end=got_loop_length
-                                
-                                print('{} : GOT : clip start,stop will be : {},{} done'.format(datetime.datetime.now(),got_clip_new_loop_start,got_clip_new_loop_end), file=f)
-                                
-                                got_clip.looping=True    
-                                got_clip.position=got_clip_new_loop_start
-                                got_clip.start_marker=got_clip_new_loop_start
-                                got_clip.loop_end=got_clip_new_loop_end
-                                
-                                
-                # stop recording session                
-                self.song().session_record = not self.song().session_record
-                #Live.Clip.Clip.positionProperty
-                #if self.session_is_visible():
-                #    clip_slot = self.selected_clip_slot()
-                #    if clip_slot and clip_slot.clip:
-                #        got_clip=clip_slot.clip
-                #        got_position=got_clip.playing_position
-                #        got_clip.looping=True
-                #        
-                #        got_loop_length=got_clip.signature_numerator
-                #        print('{} : GOT : loop length : {} done'.format(datetime.datetime.now(),got_loop_length), file=f)
-                #        
-                #        got_clip_new_loop_start=(got_position//got_loop_length-1)*got_loop_length
-                #        got_clip_new_loop_end=(got_position//got_loop_length)*got_loop_length
-                #        if got_clip_new_loop_start<0:
-                #            got_clip_new_loop_start=0
-                #            got_clip_new_loop_end=got_loop_length
-                #        got_clip.position=got_clip_new_loop_start
-                #        got_clip.loop_end=got_clip_new_loop_end
-                #        
-                #        print('{} : GOT : playing_position position : {} done'.format(datetime.datetime.now(),got_position), file=f)
-                #        
-                #        self.song().session_record = not self.song().session_record                        
-                #    else:
-                #        print('{} : GOT : clip_slot and clip_slot.clip is false'.format(datetime.datetime.now()), file=f)
-                #else:
-                #    print('{} : GOT : self.session_is_visible is not visible'.format(datetime.datetime.now()), file=f)
-            
-            # Session record is not activated yet
-            # Preparing to record in session mode
-            got_clip_slot_to_show=None
-            if ( not self.song().session_record ):
-                for got_track in self.song().tracks:
-                    if got_track.arm==True:
-                        # find the last clip slot of the track that already has a clip
-                        got_last_clip_stop_with_clip_id=-1
-                        for i,got_clip_slot in enumerate(got_track.clip_slots):
-                            got_last_clip_slot_id=i
-                            if got_clip_slot.has_clip:
-                                got_last_clip_stop_with_clip_id=i
+                                    got_log(line_numb(),'previous clip slot has no clip')
+                            else:
+                                got_log(line_numb(),'there is no previous clip slot')
+                            # the new loop start/end will be the previous loop that have been recorded
+                            got_position=got_clip.playing_position
+                            got_log(line_numb(),'got_position : {} done'.format(got_position))
+                            got_clip_new_loop_start=(got_position//got_loop_length-1)*got_loop_length
+                            got_clip_new_loop_end=(got_position//got_loop_length)*got_loop_length
+                            
+                            # in case there was no previous loop ( stop record pressed before the loop length )
+                            if got_clip_new_loop_start<0:
+                                got_clip_new_loop_start=0
+                                got_clip_new_loop_end=got_loop_length
+                            
+                            got_log(line_numb(),'clip start,stop will be : {},{} done'.format(got_clip_new_loop_start,got_clip_new_loop_end))
+                            
+                            got_clip.looping=True    
+                            got_clip.position=got_clip_new_loop_start
+                            got_clip.start_marker=0
+                            got_clip.loop_end=got_clip_new_loop_end
+                            
+                            
+            # stop recording session                
+            self.song().session_record = not self.song().session_record
+            #Live.Clip.Clip.positionProperty
+            #if self.session_is_visible():
+            #    clip_slot = self.selected_clip_slot()
+            #    if clip_slot and clip_slot.clip:
+            #        got_clip=clip_slot.clip
+            #        got_position=got_clip.playing_position
+            #        got_clip.looping=True
+            #        
+            #        got_loop_length=got_clip.signature_numerator
+            #        print('{} : GOT : loop length : {} done'.format(datetime.datetime.now(),got_loop_length), file=f)
+            #        
+            #        got_clip_new_loop_start=(got_position//got_loop_length-1)*got_loop_length
+            #        got_clip_new_loop_end=(got_position//got_loop_length)*got_loop_length
+            #        if got_clip_new_loop_start<0:
+            #            got_clip_new_loop_start=0
+            #            got_clip_new_loop_end=got_loop_length
+            #        got_clip.position=got_clip_new_loop_start
+            #        got_clip.loop_end=got_clip_new_loop_end
+            #        
+            #        print('{} : GOT : playing_position position : {} done'.format(datetime.datetime.now(),got_position), file=f)
+            #        
+            #        self.song().session_record = not self.song().session_record                        
+            #    else:
+            #        print('{} : GOT : clip_slot and clip_slot.clip is false'.format(datetime.datetime.now()), file=f)
+            #else:
+            #    print('{} : GOT : self.session_is_visible is not visible'.format(datetime.datetime.now()), file=f)
+        
+        # Session record is not activated yet
+        # Preparing to record in session mode
+        got_clip_slot_to_show=None
+        if ( not self.song().session_record ):
+            for got_track in self.song().tracks:
+                if got_track.arm==True:
+                    # find the last clip slot of the track that already has a clip
+                    got_last_clip_stop_with_clip_id=-1
+                    for i,got_clip_slot in enumerate(got_track.clip_slots):
+                        got_last_clip_slot_id=i
+                        if got_clip_slot.has_clip:
+                            got_last_clip_stop_with_clip_id=i
 
-                        # start recording the next clip slot
-                        got_track.clip_slots[got_last_clip_stop_with_clip_id+1].set_fire_button_state(True)
-                        # show this clip
-                        self.song().view.highlighted_clip_slot=got_track.clip_slots[got_last_clip_stop_with_clip_id+1]
-                        #if got_clip_slot_to_show==None:
-                        #    got_clip_slot_to_show=got_track.clip_slots[got_last_clip_stop_with_clip_id+1]
-                #if got_clip_slot_to_show.clip!=None:
-                #    got_clip_slot_to_show.clip.view.show_loop()
-                #else:
-                #    while(got_clip_slot_to_show.clip==None):
-                #        time.sleep(0.1)
-                #    got_clip_slot_to_show.clip.view.show_loop()    
+                    # start recording the next clip slot
+                    got_track.clip_slots[got_last_clip_stop_with_clip_id+1].set_fire_button_state(True)
+                    # show this clip
+                    self.song().view.highlighted_clip_slot=got_track.clip_slots[got_last_clip_stop_with_clip_id+1]
+                    #if got_clip_slot_to_show==None:
+                    #    got_clip_slot_to_show=got_track.clip_slots[got_last_clip_stop_with_clip_id+1]
+            #if got_clip_slot_to_show.clip!=None:
+            #    got_clip_slot_to_show.clip.view.show_loop()
+            #else:
+            #    while(got_clip_slot_to_show.clip==None):
+            #        time.sleep(0.1)
+            #    got_clip_slot_to_show.clip.view.show_loop()    
 
     def __rewind(self, acceleration=1):
         beats = acceleration

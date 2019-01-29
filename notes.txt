@@ -111,3 +111,6 @@ Live.Song.Song.View.detail_clipProperty
 Live.Song.Song.View.highlighted_clip_slot Property
 
 	Get/Set the clip slot, defined via the highlighted track and scene in the Session.Will be None for Master- and Sendtracks.
+    
+   
+    
