@@ -387,7 +387,7 @@ class Transport(MackieControlComponent):
                             
                             got_clip.looping=True    
                             got_clip.position=got_clip_new_loop_start
-                            got_clip.start_marker=0
+                            got_clip.start_marker=got_clip.position
                             got_clip.loop_end=got_clip_new_loop_end
                             
                             
@@ -421,6 +421,7 @@ class Transport(MackieControlComponent):
             if clip_slot and clip_slot.clip:
                 got_clip=clip_slot.clip
                 got_increment=0
+                
                 if ( got_unit == "beat" ):
                     got_increment=got_clip.signature_denominator
                 if ( got_unit == "loop" ):
@@ -430,12 +431,28 @@ class Transport(MackieControlComponent):
                         got_increment=got_clip.signature_denominator*got_clip.signature_numerator
                 if ( got_unit == "bar" ):
                     got_increment=got_clip.signature_denominator*got_clip.signature_numerator
+                    
                 if got_clip.looping:
                     got_clip.position=got_clip.position+got_increment*got_amount
-                    got_clip.start_marker=0
+                    got_clip.start_marker=got_clip.position
                     
                 else:
-                    got_clip.playing_position=got_clip.playing_position++got_increment*got_amount
+                    got_clip.looping=True
+                    got_clip.position=got_clip.position+got_increment*got_amount
+                    got_clip.looping=False
+                    got_clip.start_marker=got_clip.start_marker+got_increment*got_amount
+                    # the order in which we move the start stop marker depends on the direction
+                    # because if we move the start marker forward first, it may get behind the
+                    # end marker, which will cause an error
+                    #got_log(line_numb(),'end_marker is {}'.format(got_clip.end_marker))
+                    #got_log(line_numb(),'got_increment*got_amount is {}'.format(got_increment*got_amount))
+                    #got_log(line_numb(),'end_time is {}'.format(got_clip.end_time))
+                    #if got_amount<0:
+                    #    got_clip.start_marker=got_clip.start_marker+got_increment*got_amount
+                    #    got_clip.end_marker=got_clip.end_marker+got_increment*got_amount
+                    #else:
+                    #    got_clip.end_marker=got_clip.end_marker+got_increment*got_amount
+                    #    got_clip.start_marker=got_clip.start_marker+got_increment*got_amount
     
     
     def __rewind(self, acceleration=1):
