@@ -149,14 +149,19 @@ class Transport(MackieControlComponent):
 
     def handle_marker_switch_ids(self, switch_id, value):
         got_log(line_numb(),'switch_id : {}'.format(switch_id))
+        # marker left
         if switch_id == SID_MARKER_FROM_PREV:
             if value == BUTTON_PRESSED:
-                self.__jump_to_prev_cue()
+                #self.__jump_to_prev_cue()
+                self.__got_move_loop_end(-1,"beat")
         else:
+            # marker right
             if switch_id == SID_MARKER_FROM_NEXT:
                 if value == BUTTON_PRESSED:
-                    self.__jump_to_next_cue()
+                    #self.__jump_to_next_cue()
+                    self.__got_move_loop_end(1,"beat")
             else:
+                # cycle
                 if switch_id == SID_MARKER_LOOP:
                     if value == BUTTON_PRESSED:
                         self.__toggle_loop()
@@ -186,22 +191,20 @@ class Transport(MackieControlComponent):
     def handle_transport_switch_ids(self, switch_id, value):
         if switch_id == SID_TRANSPORT_REWIND:
             if value == BUTTON_PRESSED:
-                self.__rewind()
+                self.__got_move_loop(-1,"loop")
                 self.____rewind_button_down = True
             else:
                 if value == BUTTON_RELEASED:
                     self.____rewind_button_down = False
-                    self.__fast___rewind_counter = 0
             self.__update_forward_rewind_leds()
         else:
             if switch_id == SID_TRANSPORT_FAST_FORWARD:
                 if value == BUTTON_PRESSED:
-                    self.__fast_forward()
+                    self.__got_move_loop(1,"loop")
                     self.__forward_button_down = True
                 else:
                     if value == BUTTON_RELEASED:
                         self.__forward_button_down = False
-                        self.____fast_forward_counter = 0
                 self.__update_forward_rewind_leds()
             else:
                 if switch_id == SID_TRANSPORT_STOP:
@@ -219,47 +222,18 @@ class Transport(MackieControlComponent):
     def handle_jog_wheel_rotation(self, value):
         got_log(line_numb(),'jog wheel rotation value : {}'.format(value))
         backwards = value >= 64
-        if self.control_is_pressed():
-            if self.alt_is_pressed():
-                step = 0.1
-            else:
-                step = 1.0
-            if backwards:
-                amount = -(value - 64)
-            else:
-                amount = value
-            tempo = max(20, min(999, self.song().tempo + amount * step))
-            self.song().tempo = tempo
-        else:
-            if self.session_is_visible():
-                if backwards:
-                    amount = -(value - 64)
-                else:
-                    amount = value
-            
+        step=1
 
-                self.__got_move_loop(amount,"beat")
-            else:
-                if backwards:
-                    step = max(1.0, (value - 64) / 2.0)
-                else:
-                    step = max(1.0, value / 2.0)
-                if self.song().is_playing:
-                    step *= 4.0
-                if self.alt_is_pressed():
-                    step /= 4.0
-                if self.__scrub_button_down:
-                    if backwards:
-                        self.song().scrub_by(-step)
-                    else:
-                        self.song().scrub_by(step)
-                else:
-                    if backwards:
-                        self.song().jump_by(-step)
-                    else:
-                        self.song().jump_by(step)
+        if backwards:
+            amount = -(value - 64)
+        else:
+            amount = value
+        tempo = max(20, min(999, self.song().tempo + amount * step))
+        self.song().tempo = tempo
+
 
     def handle_jog_wheel_switch_ids(self, switch_id, value):
+        got_log(line_numb(),'switch_id : {}'.format(switch_id))
         if switch_id == SID_JOG_CURSOR_UP:
             if value == BUTTON_PRESSED:
                 self.__cursor_up_is_down = True
@@ -387,7 +361,7 @@ class Transport(MackieControlComponent):
                             
                             got_clip.looping=True    
                             got_clip.position=got_clip_new_loop_start
-                            got_clip.start_marker=got_clip.position
+                            #got_clip.start_marker=got_clip.position
                             got_clip.loop_end=got_clip_new_loop_end
                             
                             
@@ -453,7 +427,38 @@ class Transport(MackieControlComponent):
                     #else:
                     #    got_clip.end_marker=got_clip.end_marker+got_increment*got_amount
                     #    got_clip.start_marker=got_clip.start_marker+got_increment*got_amount
-    
+
+    def __got_move_loop_end(self,got_amount,got_unit):
+
+        if self.session_is_visible():
+
+        
+
+            clip_slot = self.selected_clip_slot()
+            if clip_slot and clip_slot.clip:
+                got_clip=clip_slot.clip
+                got_increment=0
+                
+                if ( got_unit == "beat" ):
+                    got_increment=got_clip.signature_denominator
+                if ( got_unit == "loop" ):
+                    if got_clip.looping:
+                        got_increment=got_clip.loop_end-got_clip.loop_start
+                    else:
+                        got_increment=got_clip.signature_denominator*got_clip.signature_numerator
+                if ( got_unit == "bar" ):
+                    got_increment=got_clip.signature_denominator*got_clip.signature_numerator
+                    
+                if got_clip.looping:
+                    if got_clip.loop_end>(got_clip.loop_start+got_amount*got_increment):
+                        got_clip.loop_end=got_clip.loop_end+got_amount*got_increment
+
+                    
+                else:
+                    got_clip.looping=True
+                    if got_clip.loop_end>(got_clip_loop_start+got_increment):
+                        got_clip.loop_end=got_clip.loop_end-got_increment
+                    got_clip.looping=False                    
     
     def __rewind(self, acceleration=1):
         beats = acceleration
