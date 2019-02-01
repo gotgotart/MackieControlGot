@@ -14,6 +14,15 @@ from .SoftwareController import SoftwareController
 from .Transport import Transport
 import Live, MidiRemoteScript
 
+import datetime
+import inspect
+got_log_file='c:/temp/ableton_mackie.log'
+got_debug=True
+def got_log(got_log_str):
+    if got_debug:
+        with open(got_log_file, 'a+') as f:
+            print('{} | line {} | {}'.format(datetime.datetime.now(),inspect.currentframe().f_back.f_lineno,got_log_str), file=f)
+            
 class MackieControl:
     u"""Main class that establishes the Mackie Control <-> Live interaction. It acts
        as a container/manager for all the Mackie Control sub-components like ChannelStrips,
@@ -155,6 +164,7 @@ class MackieControl:
     def receive_midi(self, midi_bytes):
         if midi_bytes[0] & 240 == NOTE_ON_STATUS or midi_bytes[0] & 240 == NOTE_OFF_STATUS:
             note = midi_bytes[1]
+            got_log('note : {}'.format(note))
             value = BUTTON_PRESSED if midi_bytes[2] > 0 else BUTTON_RELEASED
             if note in range(SID_FIRST, SID_LAST + 1):
                 if note in display_switch_ids:

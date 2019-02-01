@@ -5,9 +5,9 @@ v 2. quand on clique record, activer lenregistrement dans le premier clip dispo 
     déplacer par increment de taille de loop.
     agrandir/réctrécir par incrament de beat
 v 4. Setter la duree du loop par defaut autrement que à une mesure : faire une mesure si la durée du loop du clip précédent n'est pas défini, sinon la durée du loop du clip précédent.
-5. gerer le cas d'une track audio
+v 5. gerer le cas d'une track audio : ca s'est fait tout seul en fait
 v 6. Gerer le cas ou on appuie sur record alors que le clip existe déjà : pas de problème si 2. est fait
-7. assigner une fonction au job wheel : master volume? ou plutot move loop by loop length
+v7. assigner une fonction au job wheel : master volume? ou plutot move loop by loop length : set bpm en fi de compte
 low priority/pas indispensable 8. disable select quand on touch le volume ou autre d'une tracks
 8. handle multiple modes
     our session looping mode
@@ -20,6 +20,8 @@ low priority/pas indispensable 8. disable select quand on touch le volume ou aut
     fast forward/backward is move loop by loop length if loop or move clip by bar
     'track' forward/backward is  move loop by beat if loop or move clip by beat
     marker forward/backward is increase loop length by loop length ? or bar?
+    
+11. assign 'set' to quantize clip
 
 Live.Clip.Clip.loop_end Property
 

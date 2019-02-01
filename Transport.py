@@ -20,10 +20,10 @@ def line_numb():
     '''Returns the current line number in our program'''
     return inspect.currentframe().f_back.f_lineno
 
-def got_log(got_line_numb,got_log_str):
+def got_log(got_log_str):
     if got_debug:
         with open(got_log_file, 'a+') as f:
-            print('{} | line {} | {}'.format(datetime.datetime.now(),got_line_numb,got_log_str), file=f)
+            print('{} | line {} | {}'.format(datetime.datetime.now(),inspect.currentframe().f_back.f_lineno,got_log_str), file=f)
 
 class Transport(MackieControlComponent):
     """Representing the transport section of the Mackie Control: """
@@ -50,8 +50,8 @@ class Transport(MackieControlComponent):
         self.song().add_loop_listener(self.__update_loop_button_led)
         self.song().add_punch_out_listener(self.__update_punch_out_button_led)
         self.song().add_punch_in_listener(self.__update_punch_in_button_led)
-        self.song().add_can_jump_to_prev_cue_listener(self.__update_prev_cue_button_led)
-        self.song().add_can_jump_to_next_cue_listener(self.__update_next_cue_button_led)
+        #self.song().add_can_jump_to_prev_cue_listener(self.__update_prev_cue_button_led)
+        #self.song().add_can_jump_to_next_cue_listener(self.__update_next_cue_button_led)
         self.application().view.add_is_view_visible_listener(b'Session', self.__on_session_is_visible_changed)
         self.refresh_state()
 
@@ -61,8 +61,8 @@ class Transport(MackieControlComponent):
         self.song().remove_loop_listener(self.__update_loop_button_led)
         self.song().remove_punch_out_listener(self.__update_punch_out_button_led)
         self.song().remove_punch_in_listener(self.__update_punch_in_button_led)
-        self.song().remove_can_jump_to_prev_cue_listener(self.__update_prev_cue_button_led)
-        self.song().remove_can_jump_to_next_cue_listener(self.__update_next_cue_button_led)
+        #self.song().remove_can_jump_to_prev_cue_listener(self.__update_prev_cue_button_led)
+        #self.song().remove_can_jump_to_next_cue_listener(self.__update_next_cue_button_led)
         self.application().view.remove_is_view_visible_listener(b'Session', self.__on_session_is_visible_changed)
         for note in transport_control_switch_ids:
             self.send_midi((NOTE_ON_STATUS, note, BUTTON_STATE_OFF))
@@ -78,8 +78,8 @@ class Transport(MackieControlComponent):
     def refresh_state(self):
         self.__update_play_button_led()
         self.__update_record_button_led()
-        self.__update_prev_cue_button_led()
-        self.__update_next_cue_button_led()
+        #self.__update_prev_cue_button_led()
+        #self.__update_next_cue_button_led()
         self.__update_loop_button_led()
         self.__update_punch_in_button_led()
         self.__update_punch_out_button_led()
@@ -148,18 +148,26 @@ class Transport(MackieControlComponent):
             self.__update_zoom_led_in_session()
 
     def handle_marker_switch_ids(self, switch_id, value):
-        got_log(line_numb(),'switch_id : {}'.format(switch_id))
+        got_log('switch_id : {}'.format(switch_id))
         # marker left
         if switch_id == SID_MARKER_FROM_PREV:
             if value == BUTTON_PRESSED:
                 #self.__jump_to_prev_cue()
                 self.__got_move_loop_end(-1,"beat")
+                self.send_midi((NOTE_ON_STATUS, SID_MARKER_FROM_PREV, BUTTON_STATE_ON))
+            else:
+                if value == BUTTON_RELEASED:
+                    self.send_midi((NOTE_ON_STATUS, SID_MARKER_FROM_PREV, BUTTON_STATE_OFF))
         else:
             # marker right
             if switch_id == SID_MARKER_FROM_NEXT:
                 if value == BUTTON_PRESSED:
                     #self.__jump_to_next_cue()
                     self.__got_move_loop_end(1,"beat")
+                    self.send_midi((NOTE_ON_STATUS, SID_MARKER_FROM_NEXT, BUTTON_STATE_ON))
+                else:
+                    if value == BUTTON_RELEASED:
+                        self.send_midi((NOTE_ON_STATUS, SID_MARKER_FROM_NEXT, BUTTON_STATE_OFF))
             else:
                 # cycle
                 if switch_id == SID_MARKER_LOOP:
@@ -218,9 +226,28 @@ class Transport(MackieControlComponent):
                         if switch_id == SID_TRANSPORT_RECORD:
                             if value == BUTTON_PRESSED:
                                 self.__toggle_record()
-
+                        else:
+                            if switch_id == SID_FADERBANK_PREV_BANK:
+                                if value == BUTTON_PRESSED:
+                                    self.__got_move_loop(-1,"beat")
+                                    self.send_midi((NOTE_ON_STATUS, SID_FADERBANK_PREV_BANK, BUTTON_STATE_ON))
+                                else:
+                                    if value == BUTTON_RELEASED:
+                                        self.send_midi((NOTE_ON_STATUS, SID_FADERBANK_PREV_BANK, BUTTON_STATE_OFF))
+                                
+                            else:
+                                if switch_id == SID_FADERBANK_NEXT_BANK:
+                                    if value == BUTTON_PRESSED:
+                                        self.__got_move_loop(1,"beat")
+                                        self.send_midi((NOTE_ON_STATUS, SID_FADERBANK_NEXT_BANK, BUTTON_STATE_ON))
+                                    else:
+                                        if value == BUTTON_RELEASED:
+                                            self.send_midi((NOTE_ON_STATUS, SID_FADERBANK_NEXT_BANK, BUTTON_STATE_OFF))
+                                    
+                                
+                                
     def handle_jog_wheel_rotation(self, value):
-        got_log(line_numb(),'jog wheel rotation value : {}'.format(value))
+        got_log('jog wheel rotation value : {}'.format(value))
         backwards = value >= 64
         step=1
 
@@ -233,7 +260,7 @@ class Transport(MackieControlComponent):
 
 
     def handle_jog_wheel_switch_ids(self, switch_id, value):
-        got_log(line_numb(),'switch_id : {}'.format(switch_id))
+        got_log('switch_id : {}'.format(switch_id))
         if switch_id == SID_JOG_CURSOR_UP:
             if value == BUTTON_PRESSED:
                 self.__cursor_up_is_down = True
@@ -325,30 +352,30 @@ class Transport(MackieControlComponent):
             for got_track in self.song().tracks:
                 if got_track.arm==True:
                     got_clip_slot_id=got_track.playing_slot_index
-                    got_log(line_numb(),'got_clip_slot_id : {}'.format(got_clip_slot_id))
+                    got_log('got_clip_slot_id : {}'.format(got_clip_slot_id))
                     if got_clip_slot_id!=-1:
                         got_clip_slot=got_track.clip_slots[got_clip_slot_id]
                         if got_clip_slot.clip:
                             got_clip=got_clip_slot.clip
                             
                             got_loop_length=got_clip.signature_numerator*got_clip.signature_denominator
-                            got_log(line_numb(),'got_clip.signature_numerator*got_clip.signature_denominator : {}'.format(got_loop_length))                                
+                            got_log('got_clip.signature_numerator*got_clip.signature_denominator : {}'.format(got_loop_length))                                
                             # set the loop length to the previous clip loop length if available
                             # else it will be the signature numerator ( see previous statement )
                             if got_track.clip_slots[got_clip_slot_id-1]:
                                 if got_track.clip_slots[got_clip_slot_id-1].clip:
                                     if got_track.clip_slots[got_clip_slot_id-1].clip.looping:
                                         got_loop_length=got_track.clip_slots[got_clip_slot_id-1].clip.loop_end-got_track.clip_slots[got_clip_slot_id-1].clip.loop_start
-                                        got_log(line_numb(),'previous clip start,stop are : {},{} done'.format(got_track.clip_slots[got_clip_slot_id-1].clip.loop_start,got_track.clip_slots[got_clip_slot_id-1].clip.loop_end))
+                                        got_log('previous clip start,stop are : {},{} done'.format(got_track.clip_slots[got_clip_slot_id-1].clip.loop_start,got_track.clip_slots[got_clip_slot_id-1].clip.loop_end))
                                     else:
-                                        got_log(line_numb(),'previous clip is not looping')
+                                        got_log('previous clip is not looping')
                                 else:
-                                    got_log(line_numb(),'previous clip slot has no clip')
+                                    got_log('previous clip slot has no clip')
                             else:
-                                got_log(line_numb(),'there is no previous clip slot')
+                                got_log('there is no previous clip slot')
                             # the new loop start/end will be the previous loop that have been recorded
                             got_position=got_clip.playing_position
-                            got_log(line_numb(),'got_position : {} done'.format(got_position))
+                            got_log('got_position : {} done'.format(got_position))
                             got_clip_new_loop_start=(got_position//got_loop_length-1)*got_loop_length
                             got_clip_new_loop_end=(got_position//got_loop_length)*got_loop_length
                             
@@ -357,7 +384,7 @@ class Transport(MackieControlComponent):
                                 got_clip_new_loop_start=0
                                 got_clip_new_loop_end=got_loop_length
                             
-                            got_log(line_numb(),'clip start,stop will be : {},{} done'.format(got_clip_new_loop_start,got_clip_new_loop_end))
+                            got_log('clip start,stop will be : {},{} done'.format(got_clip_new_loop_start,got_clip_new_loop_end))
                             
                             got_clip.looping=True    
                             got_clip.position=got_clip_new_loop_start
@@ -418,9 +445,9 @@ class Transport(MackieControlComponent):
                     # the order in which we move the start stop marker depends on the direction
                     # because if we move the start marker forward first, it may get behind the
                     # end marker, which will cause an error
-                    #got_log(line_numb(),'end_marker is {}'.format(got_clip.end_marker))
-                    #got_log(line_numb(),'got_increment*got_amount is {}'.format(got_increment*got_amount))
-                    #got_log(line_numb(),'end_time is {}'.format(got_clip.end_time))
+                    #got_log('end_marker is {}'.format(got_clip.end_marker))
+                    #got_log('got_increment*got_amount is {}'.format(got_increment*got_amount))
+                    #got_log('end_time is {}'.format(got_clip.end_time))
                     #if got_amount<0:
                     #    got_clip.start_marker=got_clip.start_marker+got_increment*got_amount
                     #    got_clip.end_marker=got_clip.end_marker+got_increment*got_amount
@@ -450,7 +477,10 @@ class Transport(MackieControlComponent):
                     got_increment=got_clip.signature_denominator*got_clip.signature_numerator
                     
                 if got_clip.looping:
-                    if got_clip.loop_end>(got_clip.loop_start+got_amount*got_increment):
+                    if got_amount<0:
+                        if got_clip.loop_end>(got_clip.loop_start+got_amount*got_increment):
+                            got_clip.loop_end=got_clip.loop_end+got_amount*got_increment
+                    else:
                         got_clip.loop_end=got_clip.loop_end+got_amount*got_increment
 
                     
